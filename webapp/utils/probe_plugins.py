@@ -4,20 +4,23 @@ import json
 def get_plugins(plugin_dir='./plugins'):
     plugins = {}
 
-    # Payload Modefiers
-    ## Compression
-    ## Encryption
-    ## Obfuscation
+    # Iterate over the categories
+    for category in os.listdir(plugin_dir):
+        category_path = os.path.join(plugin_dir, category)
 
-    # Keying
-    ## Privileges
-    ## Sandbox
-    ## Debug
+        # Check if it's a directory
+        if os.path.isdir(category_path):
+            plugins[category] = {}
 
-    # Execution
-    ## Injection
-    ## Unhooking
+            # Iterate over the subcategories
+            for subcategory in os.listdir(category_path):
+                subcategory_path = os.path.join(category_path, subcategory)
 
-    # Post Compilation
+                # Check if it's a directory
+                if os.path.isdir(subcategory_path):
+                    plugins[category][subcategory] = [
+                        plugin for plugin in os.listdir(subcategory_path)
+                        if os.path.isdir(os.path.join(subcategory_path, plugin))
+                    ]
 
     return json.dumps(plugins)
