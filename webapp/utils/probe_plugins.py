@@ -3,6 +3,7 @@ import json
 
 def get_plugins(plugin_dir='./plugins'):
     plugins = {}
+    number_of_plugins = 0
 
     # Iterate over the categories
     for category in os.listdir(plugin_dir):
@@ -23,4 +24,8 @@ def get_plugins(plugin_dir='./plugins'):
                         if os.path.isdir(os.path.join(subcategory_path, plugin))
                     ]
 
+                    # Increment counter
+                    number_of_plugins += len(plugins[category][subcategory])
+
+    print(f"[i] Loaded {number_of_plugins} plugins")
     return json.dumps(plugins)

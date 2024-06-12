@@ -67,23 +67,15 @@ func getPlugins(ip string, port int) {
     displayPlugins("Keying", knownParts.Keying)
     displayPlugins("Payload Mods", knownParts.PayloadMods)
     displayPlugins("Post Compilation", knownParts.PostComp)
-
-    // Display the dynamic parts
-    if len(dynamicParts) > 0 {
-        fmt.Println("[i] Dynamic Plugins retrieved from server:")
-        for key, value := range dynamicParts {
-            fmt.Printf("\t- %s: %v\n", key, value)
-        }
-    }
 }
 
 // Function to display plugins in a readable format
 func displayPlugins(section string, plugins map[string][]string) {
-    fmt.Printf("\t- %s:\n", section)
+    fmt.Printf("\t[+] %s:\n", section)
     for key, elements := range plugins {
-        fmt.Printf("\t\t- %s:\n", key)
+        fmt.Printf("\t\t[-] %s:\n", key)
         for _, element := range elements {
-            fmt.Printf("\t\t\t- %s\n", element)
+            fmt.Printf("\t\t\t[>] %s\n", element)
         }
     }
 }
