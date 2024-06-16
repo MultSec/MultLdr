@@ -13,7 +13,7 @@ func main() {
 
         Commands: []*cli.Command{
             {
-                Name:  "plugins",
+                Name:  "plugs",
                 Usage: "Retrieve list of plugins present",
 
                 Flags: []cli.Flag{
@@ -21,24 +21,32 @@ func main() {
                         Name:        "server",
                         Aliases:     []string{"s"},
                         Value:       "127.0.0.1",
-                        Usage:       "IP for the MultLdr server",
+                        Usage:       "Use provided `IP` for the MultLdr server",
                         DefaultText: "127.0.0.1",
                     },
                     &cli.IntFlag{
                         Name:        "port",
                         Aliases:     []string{"p"},
                         Value:       5000,
-                        Usage:       "Port for the MultLdr server",
+                        Usage:       "Use provided `PORT` for the MultLdr server",
                         DefaultText: "5000",
                     },
                 },
                 Action: func(ctx *cli.Context) error {
-                    getPlugins(ctx.String("server"), ctx.Int("port"))
+                    plugins, err  := getPlugins(ctx.String("server"), ctx.Int("port"))
+
+                    if err != nil {
+                        fmt.Printf("[!] %v\n", err)
+                        return nil
+                    }
+
+                    displayPlugins(plugins)
+
                     return nil
                 },
             },
             {
-                Name:  "generate",
+                Name:  "gen",
                 Usage: "Generates loader with the options provided",
 
                 Flags: []cli.Flag{
@@ -46,19 +54,47 @@ func main() {
                         Name:        "server",
                         Aliases:     []string{"s"},
                         Value:       "127.0.0.1",
-                        Usage:       "IP for the MultLdr server",
+                        Usage:       "Use provided `IP` for the MultLdr server",
                         DefaultText: "127.0.0.1",
                     },
                     &cli.IntFlag{
                         Name:        "port",
                         Aliases:     []string{"p"},
                         Value:       5000,
-                        Usage:       "Port for the MultLdr server",
+                        Usage:       "Use provided `PORT` for the MultLdr server",
                         DefaultText: "5000",
+                    },
+                    &cli.StringFlag{
+                        Name:        "config",
+                        Aliases:     []string{"c"},
+                        Usage:       "Load configuration from `FILE`",
+                    },
+                    &cli.StringFlag{
+                        Name:        "bin",
+                        Aliases:     []string{"b"},
+                        Usage:       "Use payload binary from `FILE`",
+                        Required:    true,
                     },
                 },
                 Action: func(ctx *cli.Context) error {
-                    getPlugins(ctx.String("server"), ctx.Int("port"))
+					var config map[string][]string
+                    var err error
+					if ctx.String("config") != "" {
+						config, err = readConfig(ctx.String("config"))
+                        if err != nil {
+                            fmt.Printf("[!] %v\n", err)
+                            return nil
+                        }
+
+					} else {
+						config = getConfig(ctx.String("server"), ctx.Int("port"))
+					}
+
+					payloadFile := ctx.String("bin")
+					fmt.Printf("[*] Using payload file: %s\n", payloadFile)
+
+                    fmt.Printf("[i] Placement: %s", config["payload_placement"])
+                    
                     return nil
                 },
             },

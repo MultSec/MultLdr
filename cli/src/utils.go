@@ -1,81 +1,124 @@
 package main
 
 import (
-		"encoding/json"
-		"fmt"
-		"io/ioutil"
-		"net/http"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
 )
 
 // Define a struct for the known parts of the JSON structure
-type KnownParts struct {
-	PreComp    map[string][]string `json:"pre_comp"`
-    Execution   map[string][]string `json:"execution"`
-    Keying      map[string][]string `json:"keying"`
-    PayloadMods map[string][]string `json:"payload_mods"`
-    PostComp    map[string][]string `json:"post_comp"`
+type Plugins struct {
+	PreComp     map[string][]string `json:"pre_comp"`
+	Execution   map[string][]string `json:"execution"`
+	Keying      map[string][]string `json:"keying"`
+	PayloadMods map[string][]string `json:"payload_mods"`
+	PostComp    map[string][]string `json:"post_comp"`
 }
 
 // Function to get plugins from the server
-func getPlugins(ip string, port int) {
-    fmt.Println("[*] Server IP: ", ip)
-    fmt.Println("[*] Server Port: ", port)
+func getPlugins(ip string, port int) (Plugins, error) {
+	var plugins Plugins
+	fmt.Println("[*] Server IP: ", ip)
+	fmt.Println("[*] Server Port: ", port)
 
-    url := fmt.Sprintf("http://%s:%d/api/v1/plugins", ip, port)
-    resp, err := http.Get(url)
-    if err != nil {
-        fmt.Printf("[!] Failed to fetch plugins: %v\n", err)
-        return
-    }
-    defer resp.Body.Close()
+	url := fmt.Sprintf("http://%s:%d/api/v1/plugins", ip, port)
+	resp, err := http.Get(url)
+	if err != nil {
+		return plugins, fmt.Errorf("failed to fetch plugins: %v", err)
+	}
+	defer resp.Body.Close()
 
-    if resp.StatusCode != http.StatusOK {
-        fmt.Printf("[!] Server returned non-200 status: %d %s\n", resp.StatusCode, resp.Status)
-        return
-    }
+	if resp.StatusCode != http.StatusOK {
+		return plugins, fmt.Errorf("server returned non-200 status: %d %s", resp.StatusCode, resp.Status)
+	}
 
-    body, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        fmt.Printf("[!] Failed to read response body: %v\n", err)
-        return
-    }
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return plugins, fmt.Errorf("failed to read response body: %v", err)
+	}
 
-    var knownParts KnownParts
-    if err := json.Unmarshal(body, &knownParts); err != nil {
-        fmt.Printf("[!] Failed to parse known parts of JSON: %v\n", err)
-        return
-    }
+	if err := json.Unmarshal(body, &plugins); err != nil {
+		return plugins, fmt.Errorf("failed to parse known parts of JSON: %v", err)
+	}
 
-    // Parse the unknown parts dynamically
-    var dynamicParts map[string]interface{}
-    if err := json.Unmarshal(body, &dynamicParts); err != nil {
-        fmt.Printf("[!] Failed to parse dynamic parts of JSON: %v\n", err)
-        return
-    }
-
-    // Remove known parts from the dynamic map
-    delete(dynamicParts, "pre_comp")
-    delete(dynamicParts, "execution")
-    delete(dynamicParts, "keying")
-    delete(dynamicParts, "payload_mods")
-    delete(dynamicParts, "post_comp")
-
-    // Display the known parts
-    fmt.Println("[i] Known Plugins retrieved from server:")
-    displayPlugins("Pre Compilation", knownParts.PreComp)
-    displayPlugins("Execution", knownParts.Execution)
-    displayPlugins("Keying", knownParts.Keying)
-    displayPlugins("Payload Mods", knownParts.PayloadMods)
-    displayPlugins("Post Compilation", knownParts.PostComp)
+	return plugins, nil
 }
 
 // Function to display plugins in a readable format
-func displayPlugins(section string, plugins map[string][]string) {
-    fmt.Printf("\t[+] %s:\n", section)
-    for key, elements := range plugins {
-        fmt.Printf("\t\t[-] %s:\n", key)
-        for _, element := range elements {
-            fmt.Printf("\t\t\t[>] %s\n", element)
-        }
-    }
+func displayPlugins(plugins Plugins) {
+	// Display the known parts
+	fmt.Println("[i] Known Plugins retrieved from server:")
+
+	fmt.Printf("\t[+] Pre Compilation:\n")
+	for key, elements := range plugins.PreComp {
+		fmt.Printf("\t\t[-] %s:\n", key)
+		for _, element := range elements {
+			fmt.Printf("\t\t\t[>] %s\n", element)
+		}
+	}
+
+	fmt.Printf("\t[+] Execution:\n")
+	for key, elements := range plugins.Execution {
+		fmt.Printf("\t\t[-] %s:\n", key)
+		for _, element := range elements {
+			fmt.Printf("\t\t\t[>] %s\n", element)
+		}
+	}
+
+	fmt.Printf("\t[+] Keying:\n")
+	for key, elements := range plugins.Keying {
+		fmt.Printf("\t\t[-] %s:\n", key)
+		for _, element := range elements {
+			fmt.Printf("\t\t\t[>] %s\n", element)
+		}
+	}
+
+	fmt.Printf("\t[+] Payload Mods:\n")
+	for key, elements := range plugins.PayloadMods {
+		fmt.Printf("\t\t[-] %s:\n", key)
+		for _, element := range elements {
+			fmt.Printf("\t\t\t[>] %s\n", element)
+		}
+	}
+
+	fmt.Printf("\t[+] Post Compilation:\n")
+	for key, elements := range plugins.PostComp {
+		fmt.Printf("\t\t[-] %s:\n", key)
+		for _, element := range elements {
+			fmt.Printf("\t\t\t[>] %s\n", element)
+		}
+	}
+}
+
+// Retrieve config from file
+func readConfig(config string) (map[string][]string, error) {
+	file, err := os.Open(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open config file: %v", err)
+	}
+	defer file.Close()
+
+	var conf map[string][]string
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&conf); err != nil {
+		return nil, fmt.Errorf("failed to parse config file: %v", err)
+	}
+
+	return conf, nil
+}
+
+// Ask user for configuration
+func getConfig(ip string, port int) map[string][]string {
+	// Retrieve Plugins
+	_, err := getPlugins(ip, port) // TODO Get options
+	if err != nil {
+		fmt.Printf("[!] %v\n", err)
+		return nil
+	}
+
+	userConfig := make(map[string][]string)
+
+	return userConfig
 }
