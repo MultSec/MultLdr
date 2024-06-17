@@ -48,50 +48,26 @@ func getPlugins(ip string, port int) (Plugins, error) {
 	return plugins, nil
 }
 
+func printPlugins(label string, plugins map[string][]string) {
+	fmt.Printf("\t[+] %s:\n", label)
+
+	for key, elements := range plugins {
+		fmt.Printf("\t\t[-] %s:\n", key)
+		for _, element := range elements {
+			fmt.Printf("\t\t\t[>] %s\n", element)
+		}
+	}
+}
+
 // Function to display plugins in a readable format
 func displayPlugins(plugins Plugins) {
 	// Display the known parts
 	fmt.Println("[i] Known Plugins retrieved from server:")
-
-	fmt.Printf("\t[+] Pre Compilation:\n")
-	for key, elements := range plugins.PreComp {
-		fmt.Printf("\t\t[-] %s:\n", key)
-		for _, element := range elements {
-			fmt.Printf("\t\t\t[>] %s\n", element)
-		}
-	}
-
-	fmt.Printf("\t[+] Execution:\n")
-	for key, elements := range plugins.Execution {
-		fmt.Printf("\t\t[-] %s:\n", key)
-		for _, element := range elements {
-			fmt.Printf("\t\t\t[>] %s\n", element)
-		}
-	}
-
-	fmt.Printf("\t[+] Keying:\n")
-	for key, elements := range plugins.Keying {
-		fmt.Printf("\t\t[-] %s:\n", key)
-		for _, element := range elements {
-			fmt.Printf("\t\t\t[>] %s\n", element)
-		}
-	}
-
-	fmt.Printf("\t[+] Payload Mods:\n")
-	for key, elements := range plugins.PayloadMods {
-		fmt.Printf("\t\t[-] %s:\n", key)
-		for _, element := range elements {
-			fmt.Printf("\t\t\t[>] %s\n", element)
-		}
-	}
-
-	fmt.Printf("\t[+] Post Compilation:\n")
-	for key, elements := range plugins.PostComp {
-		fmt.Printf("\t\t[-] %s:\n", key)
-		for _, element := range elements {
-			fmt.Printf("\t\t\t[>] %s\n", element)
-		}
-	}
+	printPlugins("Keying", plugins.Keying)
+	printPlugins("Payload Mods", plugins.PayloadMods)
+	printPlugins("Execution", plugins.Execution)
+	printPlugins("Pre Compilation", plugins.PreComp)
+	printPlugins("Post Compilation", plugins.PostComp)
 }
 
 // Retrieve config from file
