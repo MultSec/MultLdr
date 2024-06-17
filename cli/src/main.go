@@ -87,15 +87,22 @@ func main() {
                         }
 
 					} else {
-						config = getConfig(ctx.String("server"), ctx.Int("port"))
+						config, err = getConfig(ctx.String("server"), ctx.Int("port"))
+                        if err != nil {
+                            fmt.Printf("[!] %v\n", err)
+                            return nil
+                        }
+
+                        saveConfigFile(config)
 					}
+
                     fmt.Printf("[*] Using the following settings:\n")
                     fmt.Printf("\t[>] Keying: %s\n", config["keying"])
                     fmt.Printf("\t[>] Payload mods: %s\n", config["payload_mods"])
                     fmt.Printf("\t[>] Execution: %s\n", config["execution"])
                     fmt.Printf("\t[>] Pre Compilation: %s\n", config["pre_comp"])
                     fmt.Printf("\t[>] Post Compilation: %s\n", config["post_comp"])
-
+                    
 					payloadFile := ctx.String("bin")
 					fmt.Printf("[*] Using payload file: %s\n", payloadFile)
                     

@@ -1,0 +1,17 @@
+{
+    "execution": [
+        "/execution/local/FPointer"
+    ],
+    "keying": [
+        "/keying/unhooking/KnownDLLs"
+    ],
+    "payload_mods": [
+        "/payload_mods/compression/ZLIB"
+    ],
+    "post_comp": [
+        "/post_comp/legitemacy/FileBloating"
+    ],
+    "pre_comp": [
+        "/pre_comp/IATHiding/APIHashing"
+    ]
+}

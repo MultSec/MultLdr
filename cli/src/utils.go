@@ -124,21 +124,47 @@ func getOptions(prefix string, plugins map[string][]string, label string, oneOpt
 }
 
 // Ask user for configuration
-func getConfig(ip string, port int) map[string][]string {
-	plugins, err := getPlugins(ip, port)
-	if err != nil {
-		fmt.Printf("[!] %v\n", err)
-		return nil
-	}
-
+func getConfig(ip string, port int) (map[string][]string, error) {
 	userConfig := make(map[string][]string)
 
-	fmt.Println("[i] Plugins Selection:")
-	userConfig["keying"] = getOptions("keying", plugins.Keying, "Keying", false)
-	userConfig["payload_mods"] = getOptions("payload_mods", plugins.PayloadMods, "Payload Mods", false)
-	userConfig["execution"] = getOptions("execution", plugins.Execution, "Execution", true)
-	userConfig["pre_comp"] = getOptions("pre_comp", plugins.PreComp, "Pre Compilation", false)
-	userConfig["post_comp"] = getOptions("post_comp", plugins.PostComp, "Post Compilation", false)
+	plugins, err := getPlugins(ip, port)
+	if err != nil {
+		return userConfig, err
+	}
 
-	return userConfig
+	fmt.Println("[i] Plugins Selection:")
+	userConfig["keying"] 		= getOptions("keying", plugins.Keying, "Keying", false)
+	userConfig["payload_mods"] 	= getOptions("payload_mods", plugins.PayloadMods, "Payload Mods", false)
+	userConfig["execution"] 	= getOptions("execution", plugins.Execution, "Execution", true)
+	userConfig["pre_comp"] 		= getOptions("pre_comp", plugins.PreComp, "Pre Compilation", false)
+	userConfig["post_comp"] 	= getOptions("post_comp", plugins.PostComp, "Post Compilation", false)
+
+	return userConfig, nil
+}
+
+// Save configuration file
+func saveConfigFile(config map[string][]string) {
+	fmt.Printf("[?] Save config to file [y/n]? ")
+
+	var saveFile rune
+	_, err := fmt.Scanf("%c", &saveFile)
+	if err != nil {
+		fmt.Printf("[!] %v\n", err)
+	}
+
+	if (saveFile == 'y') {
+		saveConfigFile(config)
+	}
+
+	jsonData, err := json.MarshalIndent(config, "", "    ")
+    if err != nil {
+        fmt.Printf("\t[!] %v\n", err)
+    }
+
+    err = os.WriteFile("config.json", jsonData, 0644)
+    if err != nil {
+        fmt.Printf("\t[!] %v\n", err)
+    }
+
+    fmt.Println("\t[*] Configuration file successfully written to config.json")
 }
