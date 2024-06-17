@@ -99,11 +99,23 @@ func Checkboxes(label string, opts []string, oneOption bool) []string {
 			survey.WithValidator(survey.MinItems(1)), 
 			survey.WithValidator(survey.MaxItems(1)), 
 			survey.WithRemoveSelectAll(), 
-			survey.WithRemoveSelectNone())
+			survey.WithRemoveSelectNone(), 
+			survey.WithIcons(func(icons *survey.IconSet) {
+				// you can set any icons
+				icons.Question.Text = "[?]"
+				// for more information on formatting the icons, see here: https://github.com/mgutz/ansi#style-format
+				icons.Question.Format = ""
+			}))
 	} else {
     	survey.AskOne(prompt, &res, 
 			survey.WithRemoveSelectAll(), 
-			survey.WithRemoveSelectNone())
+			survey.WithRemoveSelectNone(), 
+			survey.WithIcons(func(icons *survey.IconSet) {
+				// you can set any icons
+				icons.Question.Text = "[?]"
+				// for more information on formatting the icons, see here: https://github.com/mgutz/ansi#style-format
+				icons.Question.Format = ""
+			}))
 	}
     return res
 }
@@ -153,18 +165,16 @@ func saveConfigFile(config map[string][]string) {
 	}
 
 	if (saveFile == 'y') {
-		saveConfigFile(config)
+		jsonData, err := json.MarshalIndent(config, "", "    ")
+		if err != nil {
+			fmt.Printf("\t[!] %v\n", err)
+		}
+
+		err = os.WriteFile("config.json", jsonData, 0644)
+		if err != nil {
+			fmt.Printf("\t[!] %v\n", err)
+		}
+
+		fmt.Println("\t[*] Configuration file successfully written to config.json")
 	}
-
-	jsonData, err := json.MarshalIndent(config, "", "    ")
-    if err != nil {
-        fmt.Printf("\t[!] %v\n", err)
-    }
-
-    err = os.WriteFile("config.json", jsonData, 0644)
-    if err != nil {
-        fmt.Printf("\t[!] %v\n", err)
-    }
-
-    fmt.Println("\t[*] Configuration file successfully written to config.json")
 }
