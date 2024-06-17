@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, send_file
 from app import app
 
 # favicon.ico route
