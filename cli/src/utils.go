@@ -8,22 +8,56 @@ import (
 	"os"
 
     "github.com/AlecAivazis/survey/v2"
+	"github.com/mgutz/ansi"
 )
 
 // Define a struct for the known parts of the JSON structure
 type Plugins struct {
 	PreComp     map[string][]string `json:"pre_comp"`
-	Execution   map[string][]string `json:"execution"`
 	Keying      map[string][]string `json:"keying"`
+	Execution   map[string][]string `json:"execution"` 
 	PayloadMods map[string][]string `json:"payload_mods"`
 	PostComp    map[string][]string `json:"post_comp"`
+}
+
+type Log int64
+
+const (
+    logError Log = iota
+    logInfo
+    logStatus
+    logInput
+	logSuccess
+	logSection
+	logSubSection
+)
+
+// Function to print logs
+func printLog(log Log, text string) {
+	switch log {
+	case logError:
+		fmt.Printf("[%s] %s %s\n", ansi.ColorFunc("red")("!"), ansi.ColorFunc("red")("ERROR:"), ansi.ColorFunc("cyan")(text))
+	case logInfo:
+		fmt.Printf("[%s] %s\n", ansi.ColorFunc("blue")("i"), text)
+	case logStatus:
+		fmt.Printf("[*] %s\n", text)
+	case logInput:
+		fmt.Printf("[%s] %s", ansi.ColorFunc("yellow")("?"), text)
+	case logSuccess:
+		fmt.Printf("[%s] %s\n", ansi.ColorFunc("green")("+"), text)
+	case logSection:
+		fmt.Printf("\t[%s] %s\n", ansi.ColorFunc("yellow")("-"), text)
+	case logSubSection:
+		fmt.Printf("\t\t[%s] %s\n", ansi.ColorFunc("magenta")(">"), text)
+	}
 }
 
 // Function to get plugins from the server
 func getPlugins(ip string, port int) (Plugins, error) {
 	var plugins Plugins
-	fmt.Println("[*] Server IP: ", ip)
-	fmt.Println("[*] Server Port: ", port)
+
+	printLog(logInfo, fmt.Sprintf("%s %s", ansi.ColorFunc("default+hb")("Server IP: "), ansi.ColorFunc("cyan")(ip)))
+	printLog(logInfo, fmt.Sprintf("%s %s", ansi.ColorFunc("default+hb")("Server Port: "), ansi.ColorFunc("cyan")(fmt.Sprintf("%d", port))))
 
 	url := fmt.Sprintf("http://%s:%d/api/v1/plugins", ip, port)
 	resp, err := http.Get(url)
@@ -49,12 +83,12 @@ func getPlugins(ip string, port int) (Plugins, error) {
 }
 
 func printPlugins(label string, plugins map[string][]string) {
-	fmt.Printf("\t[+] %s:\n", label)
+	printLog(logSuccess, fmt.Sprintf("%s:", ansi.ColorFunc("default+hb")(label)))
 
 	for key, elements := range plugins {
-		fmt.Printf("\t\t[-] %s:\n", key)
+		printLog(logSection, fmt.Sprintf("%s:", ansi.ColorFunc("default+hb")(key)))
 		for _, element := range elements {
-			fmt.Printf("\t\t\t[>] %s\n", element)
+			printLog(logSubSection, fmt.Sprintf("%s", ansi.ColorFunc("cyan")(element)))
 		}
 	}
 }
@@ -62,7 +96,7 @@ func printPlugins(label string, plugins map[string][]string) {
 // Function to display plugins in a readable format
 func displayPlugins(plugins Plugins) {
 	// Display the known parts
-	fmt.Println("[i] Known Plugins retrieved from server:")
+	printLog(logInfo, "Known Plugins retrieved from server")
 	printPlugins("Keying", plugins.Keying)
 	printPlugins("Payload Mods", plugins.PayloadMods)
 	printPlugins("Execution", plugins.Execution)
@@ -102,7 +136,7 @@ func Checkboxes(label string, opts []string, oneOption bool) []string {
 			survey.WithRemoveSelectNone(), 
 			survey.WithIcons(func(icons *survey.IconSet) {
 				// you can set any icons
-				icons.Question.Text = "[?]"
+				icons.Question.Text = fmt.Sprintf("[%s]", ansi.ColorFunc("yellow")("?"))
 				// for more information on formatting the icons, see here: https://github.com/mgutz/ansi#style-format
 				icons.Question.Format = ""
 			}))
@@ -112,7 +146,7 @@ func Checkboxes(label string, opts []string, oneOption bool) []string {
 			survey.WithRemoveSelectNone(), 
 			survey.WithIcons(func(icons *survey.IconSet) {
 				// you can set any icons
-				icons.Question.Text = "[?]"
+				icons.Question.Text = fmt.Sprintf("[%s]", ansi.ColorFunc("yellow")("?"))
 				// for more information on formatting the icons, see here: https://github.com/mgutz/ansi#style-format
 				icons.Question.Format = ""
 			}))
@@ -144,7 +178,7 @@ func getConfig(ip string, port int) (map[string][]string, error) {
 		return userConfig, err
 	}
 
-	fmt.Println("[i] Plugins Selection:")
+	printLog(logInfo, ansi.ColorFunc("default+hb")("Plugins Selection: "))
 	userConfig["keying"] 		= getOptions("keying", plugins.Keying, "Keying", false)
 	userConfig["payload_mods"] 	= getOptions("payload_mods", plugins.PayloadMods, "Payload Mods", false)
 	userConfig["execution"] 	= getOptions("execution", plugins.Execution, "Execution", true)
@@ -156,25 +190,29 @@ func getConfig(ip string, port int) (map[string][]string, error) {
 
 // Save configuration file
 func saveConfigFile(config map[string][]string) {
-	fmt.Printf("[?] Save config to file [y/n]? ")
+	printLog(logInput, ansi.ColorFunc("default+hb")("Save config to file [y/n]? "))
+	
+	fmt.Print("", ansi.ColorCode("cyan"))
 
 	var saveFile rune
 	_, err := fmt.Scanf("%c", &saveFile)
 	if err != nil {
-		fmt.Printf("[!] %v\n", err)
+		printLog(logError, fmt.Sprintf("%v", err))
 	}
+	
+	fmt.Print("", ansi.ColorCode("reset"))
 
 	if (saveFile == 'y') {
 		jsonData, err := json.MarshalIndent(config, "", "    ")
 		if err != nil {
-			fmt.Printf("\t[!] %v\n", err)
+			printLog(logError, fmt.Sprintf("%v", err))
 		}
 
 		err = os.WriteFile("config.json", jsonData, 0644)
 		if err != nil {
-			fmt.Printf("\t[!] %v\n", err)
+			printLog(logError, fmt.Sprintf("%v", err))
 		}
 
-		fmt.Println("\t[*] Configuration file successfully written to config.json")
+		printLog(logSuccess, "Configuration file successfully written to config.json")
 	}
 }

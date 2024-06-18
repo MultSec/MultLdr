@@ -1,10 +1,11 @@
 package main
 
 import (
-        "fmt"
-        "os"
+    "fmt"
+    "os"
 
-        "github.com/urfave/cli/v2"
+    "github.com/urfave/cli/v2"
+	"github.com/mgutz/ansi"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
                     plugins, err  := getPlugins(ctx.String("server"), ctx.Int("port"))
 
                     if err != nil {
-                        fmt.Printf("[!] %v\n", err)
+                        printLog(logError, fmt.Sprintf("%v", err))
                         return nil
                     }
 
@@ -82,29 +83,24 @@ func main() {
 					if ctx.String("config") != "" {
 						config, err = readConfig(ctx.String("config"))
                         if err != nil {
-                            fmt.Printf("[!] %v\n", err)
+                            printLog(logError, fmt.Sprintf("%v", err))
                             return nil
                         }
 
 					} else {
 						config, err = getConfig(ctx.String("server"), ctx.Int("port"))
                         if err != nil {
-                            fmt.Printf("[!] %v\n", err)
+                            printLog(logError, fmt.Sprintf("%v", err))
                             return nil
                         }
 
                         saveConfigFile(config)
 					}
 
-                    fmt.Printf("[*] Using the following settings:\n")
-                    fmt.Printf("\t[>] Keying: %s\n", config["keying"])
-                    fmt.Printf("\t[>] Payload mods: %s\n", config["payload_mods"])
-                    fmt.Printf("\t[>] Execution: %s\n", config["execution"])
-                    fmt.Printf("\t[>] Pre Compilation: %s\n", config["pre_comp"])
-                    fmt.Printf("\t[>] Post Compilation: %s\n", config["post_comp"])
+                    printPlugins("Using the following settings", config)
                     
 					payloadFile := ctx.String("bin")
-					fmt.Printf("[*] Using payload file: %s\n", payloadFile)
+                    printLog(logInfo, fmt.Sprintf("%s %s", ansi.ColorFunc("default+hb")("Using payload file: "), ansi.ColorFunc("cyan")(payloadFile)))
                     
                     return nil
                 },
@@ -113,6 +109,6 @@ func main() {
     }
 
     if err := app.Run(os.Args); err != nil {
-        fmt.Println(err)
+        printLog(logError, fmt.Sprintf("%v", err))
     }
 }
