@@ -12,6 +12,13 @@ def favicon():
 def plugins():
     return app.config['plugins']
 
+
+# Generate payload for a given id
+@app.route('/api/v1/payload/generate/<id>', methods=['POST'])
+def generate(id):
+
+    return id
+
 # Route for errors
 @app.errorhandler(404)
 def page_not_found(e):
