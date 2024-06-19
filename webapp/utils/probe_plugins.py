@@ -27,5 +27,6 @@ def get_plugins(plugin_dir='./plugins'):
                     # Increment counter
                     number_of_plugins += len(plugins[category][subcategory])
 
-    print(f"[i] Loaded {number_of_plugins} plugins")
+    print(f"[\033[34m*\033[0m] Loaded {number_of_plugins} plugins")
+
     return json.dumps(plugins)
