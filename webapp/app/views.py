@@ -50,22 +50,26 @@ def generate(id):
     if not data:
         return jsonify({"error": "No JSON data received"}), 400
     
-    # Process the JSON data
-    try:        
-        # Read and print all key-value pairs
-        plugins = data.items()
+    # Read and print all key-value pairs
+    plugins = data.items()
 
-        # Start worker thread
-        thread = Thread(target=generateLdr, args=(id, plugins, ))
-        thread.daemon = True
-        thread.start()
-    
-    except Exception as e:
-        # Remove directory
-        Log.info(f"[{id}] Removing temp dir")
-        shutil.rmtree(f'./uploads/{id}')
+    # Check if every plugin is present
+    Log.info(f"[{id}] Checking Loader Config")
+    for key, elements in plugins:
+        for element in elements:
+            if not os.path.exists("./plugins" + element + "/run.py"):
+                Log.error(f"[{id}] Plugin not found: {element}")
 
-        return jsonify({"error": f"Error processing JSON data: {str(e)}"}), 500
+                # Remove directory
+                Log.info(f"[{id}] Removing temp dir")
+                shutil.rmtree(f'./uploads/{id}')
+
+                return jsonify({"error": f"Plugin not found: {element}"}), 500
+
+    # Start worker thread
+    thread = Thread(target=generateLdr, args=(id, plugins, ))
+    thread.daemon = True
+    thread.start()
 
     return jsonify({"message": "Loader generation started successfully"})
 
