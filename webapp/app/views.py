@@ -2,6 +2,8 @@ from flask import render_template, send_file, request, jsonify
 from app import app, Log
 import os
 import shutil
+from threading import Thread
+from utils.ldr_generation import generateLdr
 
 # favicon.ico route
 @app.route('/favicon.ico')
@@ -58,20 +60,50 @@ def generate(id):
             Log.section(key)
             for element in elements:
                 Log.subsection(element)
+
+        thread = Thread(target=generateLdr, args=(id, plugins, ))
+        thread.daemon = True
+        thread.start()
     
     except Exception as e:
-        print(str(e))
         # Remove directory
         Log.info("Removing temp dir for client: " + id)
         shutil.rmtree(f'./uploads/{id}')
 
         return jsonify({"error": f"Error processing JSON data: {str(e)}"}), 500
 
+    return jsonify({"message": "Loader generation started successfully"})
+
+# Generate loader with payload for a given id
+@app.route('/api/v1/payload/status/<id>', methods=['GET'])
+def getStatus(id):
+    filename = f'./uploads/{id}/status'
+
+    try:
+        with open(filename, 'r') as file:
+            # Check if its contents is the word "Finished"
+            contents = file.read().strip()
+            if contents == "Finished":
+                return jsonify({"status": "Finished"}), 200
+            else:
+                return jsonify({"status": "Not Finished"}), 200
+
+    except FileNotFoundError:
+        return jsonify({"error": "Error wrong client id"}), 500
+
+# Generate loader with payload for a given id
+@app.route('/api/v1/payload/result/<id>', methods=['GET'])
+def getStatus(id):
+    file_path = f'./uploads/{id}/result'
+
+    # Send the file to the client
+    response = send_file(file_path, as_attachment=True)
+
     # Remove directory
     Log.info("Removing temp dir for client: " + id)
     shutil.rmtree(f'./uploads/{id}')
 
-    return jsonify({"message": "Loader generated successfully"})
+    return response
 
 # Route for errors
 @app.errorhandler(404)
