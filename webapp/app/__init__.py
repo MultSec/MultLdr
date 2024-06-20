@@ -1,5 +1,8 @@
 from flask import Flask
 import logging
+import flask.cli
+
+flask.cli.show_server_banner = lambda *args: None
 
 log = logging.getLogger('werkzeug')
 log.disabled = True

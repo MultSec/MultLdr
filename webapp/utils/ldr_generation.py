@@ -16,19 +16,19 @@ def setStatus(id):
             file.write("Working")
 
 def generateLdr(id, plugins):
-    Log.info(f"\t[{id}] Setting working status")
+    Log.info(f"[{id}] Setting working status")
     
     setStatus(id)
 
     for i in range(10):
-        Log.info(f"\t[{id}] Working... {i + 1}/10")
+        Log.info(f"[{id}] Working... {i + 1}/10")
         time.sleep(1)
 
     # Mimic compiled binary
     with open(f'./uploads/{id}/result', 'w') as file:
-        file.write("Finished")
+        file.write("LOADER")
 
-    Log.info(f"\t[{id}] Work done, updating status")
+    Log.info(f"[{id}] Work done, updating status")
 
     setStatus(id)
 

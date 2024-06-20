@@ -19,7 +19,7 @@ def plugins():
 # Upload raw payload for a given id
 @app.route('/api/v1/payload/upload/<id>', methods=['POST'])
 def upload(id):
-    Log.info("Saving payload from client: " + id)
+    Log.info(f"[{id}] Saving payload")
 
     # Check if 'payload' file is in the request
     if 'payload' not in request.files:
@@ -30,7 +30,7 @@ def upload(id):
     file = request.files['payload']
 
     # Make directory
-    Log.info("generating temp dir for client: " + id)
+    Log.info(f"[{id}] Generating temp dir")
     os.makedirs(f'./uploads/{id}')
     
     # Save the file to the uploads folder as payload
@@ -42,7 +42,7 @@ def upload(id):
 # Generate loader with payload for a given id
 @app.route('/api/v1/payload/generate/<id>', methods=['POST'])
 def generate(id):
-    Log.info("Generating loader for client: " + id)
+    Log.info(f"[{id}] Generating loader")
 
     # Get JSON data from the request
     data = request.get_json()
@@ -55,19 +55,14 @@ def generate(id):
         # Read and print all key-value pairs
         plugins = data.items()
 
-        Log.success(f"Config used for id: {id}")
-        for key, elements in plugins:
-            Log.section(key)
-            for element in elements:
-                Log.subsection(element)
-
+        # Start worker thread
         thread = Thread(target=generateLdr, args=(id, plugins, ))
         thread.daemon = True
         thread.start()
     
     except Exception as e:
         # Remove directory
-        Log.info("Removing temp dir for client: " + id)
+        Log.info(f"[{id}] Removing temp dir")
         shutil.rmtree(f'./uploads/{id}')
 
         return jsonify({"error": f"Error processing JSON data: {str(e)}"}), 500
@@ -94,16 +89,20 @@ def getStatus(id):
 # Generate loader with payload for a given id
 @app.route('/api/v1/payload/result/<id>', methods=['GET'])
 def getResult(id):
-    file_path = f'./uploads/{id}/result'
+    file_path = os.path.abspath(f'./uploads/{id}/result')
 
-    # Send the file to the client
-    response = send_file(file_path, as_attachment=True)
+    # Check if the file exists
+    if os.path.exists(file_path):
+        # Send the file to the client
+        result = send_file(file_path, as_attachment=True)
+    else:
+        result = jsonify({"error": "File not found"}), 404
 
     # Remove directory
-    Log.info("Removing temp dir for client: " + id)
+    Log.info(f"[{id}] Removing temp dir")
     shutil.rmtree(f'./uploads/{id}')
 
-    return response
+    return result
 
 # Route for errors
 @app.errorhandler(404)
