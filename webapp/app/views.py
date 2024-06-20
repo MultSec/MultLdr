@@ -93,7 +93,7 @@ def getStatus(id):
 
 # Generate loader with payload for a given id
 @app.route('/api/v1/payload/result/<id>', methods=['GET'])
-def getStatus(id):
+def getResult(id):
     file_path = f'./uploads/{id}/result'
 
     # Send the file to the client
