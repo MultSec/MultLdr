@@ -1,5 +1,5 @@
 def name():
-    return "RC4"
+    return "RC4 Encryption"
 
 def run():
-    print("Running RC4")
+    return

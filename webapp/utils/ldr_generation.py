@@ -1,5 +1,6 @@
 from app import Log
 import time
+import importlib
 
 def setStatus(id):
     filename = f'./uploads/{id}/status'
@@ -16,19 +17,49 @@ def setStatus(id):
             file.write("Working")
 
 def generateLdr(id, plugins):
-    Log.info(f"[{id}] Setting working status")
+    Log.info(f"[\033[34m{id}\033[0m] Setting working status")
     
     setStatus(id)
 
-    for i in range(10):
-        Log.info(f"[{id}] Working... {i + 1}/10")
-        time.sleep(1)
+    # Run Payload mods
+    for plugin in plugins["payload_mods"]:
+        plugPath = "plugins" + plugin.replace("/", ".") + ".run"
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        time.sleep(1) # emulate running plugin
+        importlib.import_module(plugPath).run()
+
+    # Run Keying
+    for plugin in plugins["keying"]:
+        plugPath = "plugins" + plugin.replace("/", ".") + ".run"
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        time.sleep(1) # emulate running plugin
+        importlib.import_module(plugPath).run()
+
+    # Run Execution
+    for plugin in plugins["execution"]:
+        plugPath = "plugins" + plugin.replace("/", ".") + ".run"
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        time.sleep(1) # emulate running plugin
+        importlib.import_module(plugPath).run()
+
+    # Run Pre Compilation
+    for plugin in plugins["pre_comp"]:
+        plugPath = "plugins" + plugin.replace("/", ".") + ".run"
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        time.sleep(1) # emulate running plugin
+        importlib.import_module(plugPath).run()
+
+    # Run Post Compilation
+    for plugin in plugins["post_comp"]:
+        plugPath = "plugins" + plugin.replace("/", ".") + ".run"
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        time.sleep(1) # emulate running plugin
+        importlib.import_module(plugPath).run()
 
     # Mimic compiled binary
     with open(f'./uploads/{id}/result', 'w') as file:
         file.write("LOADER")
 
-    Log.info(f"[{id}] Work done, updating status")
+    Log.info(f"[\033[34m{id}\033[0m] Work done, updating status")
 
-    setStatus(id)
-
+    setStatus(id) 

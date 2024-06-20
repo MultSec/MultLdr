@@ -1,5 +1,5 @@
 def name():
-    return "XOR"
+    return "XOR Encryption"
 
 def run():
-    print("Running XOR")
+    return

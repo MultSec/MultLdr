@@ -19,7 +19,7 @@ def plugins():
 # Upload raw payload for a given id
 @app.route('/api/v1/payload/upload/<id>', methods=['POST'])
 def upload(id):
-    Log.info(f"[{id}] Saving payload")
+    Log.info(f"[\033[34m{id}\033[0m] Saving payload")
 
     # Check if 'payload' file is in the request
     if 'payload' not in request.files:
@@ -30,7 +30,7 @@ def upload(id):
     file = request.files['payload']
 
     # Make directory
-    Log.info(f"[{id}] Generating temp dir")
+    Log.info(f"[\033[34m{id}\033[0m] Generating temp dir")
     os.makedirs(f'./uploads/{id}')
     
     # Save the file to the uploads folder as payload
@@ -42,7 +42,7 @@ def upload(id):
 # Generate loader with payload for a given id
 @app.route('/api/v1/payload/generate/<id>', methods=['POST'])
 def generate(id):
-    Log.info(f"[{id}] Generating loader")
+    Log.info(f"[\033[34m{id}\033[0m] Generating loader")
 
     # Get JSON data from the request
     data = request.get_json()
@@ -54,20 +54,20 @@ def generate(id):
     plugins = data.items()
 
     # Check if every plugin is present
-    Log.info(f"[{id}] Checking Loader Config")
+    Log.info(f"[\033[34m{id}\033[0m] Checking Loader Config")
     for key, elements in plugins:
         for element in elements:
             if not os.path.exists("./plugins" + element + "/run.py"):
-                Log.error(f"[{id}] Plugin not found: {element}")
+                Log.error(f"[\033[34m{id}\033[0m] Plugin not found: {element}")
 
                 # Remove directory
-                Log.info(f"[{id}] Removing temp dir")
+                Log.info(f"[\033[34m{id}\033[0m] Removing temp dir")
                 shutil.rmtree(f'./uploads/{id}')
 
                 return jsonify({"error": f"Plugin not found: {element}"}), 500
 
     # Start worker thread
-    thread = Thread(target=generateLdr, args=(id, plugins, ))
+    thread = Thread(target=generateLdr, args=(id, dict(plugins), ))
     thread.daemon = True
     thread.start()
 
@@ -103,7 +103,7 @@ def getResult(id):
         result = jsonify({"error": "File not found"}), 404
 
     # Remove directory
-    Log.info(f"[{id}] Removing temp dir")
+    Log.info(f"[\033[34m{id}\033[0m] Removing temp dir")
     shutil.rmtree(f'./uploads/{id}')
 
     return result

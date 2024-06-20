@@ -1,5 +1,5 @@
 def name():
-    return "LZMA"
+    return "ZLIB Compression Algorithm"
 
 def run():
-    print("Running LZMA")
+    return

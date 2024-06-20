@@ -1,5 +1,5 @@
 def name():
-    return "AES"
+    return "AES Encryption"
 
 def run():
-    print("Running AES")
+    return
