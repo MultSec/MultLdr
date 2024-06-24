@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi">
-    <title> MultLdr </title>
+    <title>MultLdr</title>
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
     <!-- Styling -->
@@ -21,7 +21,7 @@
       }
 
       body {
-        max-width: 45%;
+        max-width: 55%;
         margin: auto;
         color: var(--snow);
         background-color: var(--dark-void);
@@ -86,7 +86,6 @@
           padding-top: 1%;
           margin-top: 2%;
           background-color: var(--slate-grey);
-          box-shadow: 25px 20px 1px var(--gluon-grey);
           border-radius: 2px;
           border: 1px solid white;
         }
@@ -100,7 +99,7 @@
     </style>
   </head>
   <body>
-    <h1> MultLdr </h1>
+    <h1>MultLdr</h1>
     <!-- Align image to center-->
     <p style="text-align: center;">
       <img width="125px" src="static/MultLdr.png" />
@@ -108,232 +107,163 @@
     <p>
       <i>MultLdr is a modular payload loader generator, created by <a href="https://infosec.exchange/@Pengrey">@Pengrey</a>. </i>
     </p>
-    <form action="/" method="post" enctype = "multipart/form-data">
+    <form action="/" method="post" enctype="multipart/form-data">
       <!-- Payload Upload -->
       <div class="files" id="files">
-        <h2> Payload Upload </h2>
+        <h2>Payload Upload</h2>
         <p>
           <b>Upload a payload to be embedded into the executable.</b>
         </p>
         <div class="border p-3 mb-3" id="dropArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
-            <!-- Placeholder for the dropped or chosen file -->
-            <p style="text-align: center;" >Drag and drop a bin file here <br>
-                or<br>
-                <input type="file" name="payload">
-            </p>
+          <!-- Placeholder for the dropped or chosen file -->
+          <p style="text-align: center;">
+            Drag and drop a bin file here <br />
+            or<br />
+            <input type="file" name="payload">
+          </p>
         </div>
       </div>
-      <!-- Analysis Evasion -->
+
+      <!-- Keying -->
       <div class="copy" id="copy">
-        <h2> Analysis Evasion </h2>
+        <h2>Environment Keying</h2>
         <p>
-          <b>Evade common Analysis techniques.</b>
+          <b>Evasion through keying the environment, in which the payload should be run.</b>
         </p>
         <div class="container">
           <div class="row">
-            <div class="col-sm-6">
-              <!-- Anti-Debugging -->
+            {% for subsection in plugins["keying"].keys() %}
+            <div class="col-12 col-md-6 col-lg-4">
               <p class="brief">
-                <b>Anti-Debugging</b>
+                <b>{{ subsection }}</b>
               </p>
               <div class="radio">
-                <label>
-                  <input type="checkbox" name="checkDebugger" value=true> Check for Debugger </label>
-              </div>
-              <!-- Anti-VM -->
-              <p class="brief">
-                <b>Anti-VM</b>
-              </p>
-              <div class="radio">
-                <label>
-                  <input type="checkbox" name="checkVM" value=true> Check for VM </label>
-              </div>
-              <div class="radio">
-                <label>
-                  <input type="checkbox" name="checkCPUID" value=true> CPU ID </label>
-              </div>
-              <div class="radio">
-                <label>
-                  <input type="checkbox" name="filesPresent" value=true> Files Present </label>
+                {% for plug in plugins["keying"][subsection] %}
+                <label><input type="checkbox" name="keying" title="{{ importlib.import_module('plugins.keying.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/keying/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                {% endfor %}
               </div>
             </div>
-            <div class="col-sm-6">
-              <!-- Anti-Sandbox -->
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Payload Mods -->
+      <div class="copy" id="copy">
+        <h2>Payload Modifiers</h2>
+        <p>
+          <b>Modifiers to the Payload to evade static signatures.</b>
+        </p>
+        <div class="container">
+          <div class="row">
+            {% for subsection in plugins["payload_mods"].keys() %}
+            <div class="col-12 col-md-6 col-lg-4">
               <p class="brief">
-                <b>Anti-Sandbox</b>
+                <b>{{ subsection }}</b>
               </p>
               <div class="radio">
-                <label>
-                  <input type="checkbox" name="checkNameChange" value=true> Check Name Change </label>
+                {% for plug in plugins["payload_mods"][subsection] %}
+                <label><input type="checkbox" name="payload_mods" title="{{ importlib.import_module('plugins.payload_mods.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/payload_mods/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                {% endfor %}
               </div>
-              <div class="radio">
-                <label>
-                  <input type="checkbox" name="checkmouseMove" value=true> Check for mouse movement </label>
-              </div>
-              <div class="radio">
-                <label>
-                  <input type="checkbox" name="checkKeyboard" value=true> Check for keyboard input </label>
-              </div>
-              <!-- Prevent Execution -->
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Execution Methods-->
+      <div class="copy" id="copy">
+        <h2>Execution</h2>
+        <p>
+          <b>Execution method to be used to run the payload</b>
+        </p>
+        <div class="container">
+          <div class="row">
+            {% for subsection in plugins["execution"].keys() %}
+            {% if loop.first %}
+            <div class="col-12 col-md-6 col-lg-4">
               <p class="brief">
-                <b>Prevent Execution</b>
+                <b>{{ subsection }}</b>
               </p>
               <div class="radio">
-                <label>
-                  <input type="checkbox" name="selfDelete" value=true> Self Deletion </label>
+                {% for plug in plugins["execution"][subsection] %}
+                {% if loop.first %}
+                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/execution/' + subsection + '/' + plug }}" checked="checked"> {{ plug }} </label><br>
+                {% else %}
+                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/execution/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                {% endif %}
+                {% endfor %}
               </div>
             </div>
-          </div>
-          <div class="copy" id="copy">
-            <h2> Payload Placement </h2>
-            <p>
-              <b>Where the payload will be placed in the executable.</b>
-            </p>
-            <select class="col-sm-12" name="placement">
-              <option value="text" selected>.text</option>
-              <option value="data">.data</option>
-              <option value="rdata">.rdata</option>
-              <option value="rsrc">.rsrc</option>
-            </select>
-          </div>
-          <!-- Encryption -->
-          <div class="copy" id="copy">
-            <h2> Payload Encryption</h2>
-            <p>
-              <b>Encrypt the payload to prevent static analysis.</b>
-            </p>
-            <select class="col-sm-12" name="encryption">
-              <option value="None" selected>None</option>
-              {% for plug in plugins["payload_mods"]["encryption"] -%}
-                <option value="{{ plug }}">{{ importlib.import_module('plugins.payload_mods.encryption.' + plug + '.plugin' ).name() }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <br />
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" name="toggleBFEncrypt" value=true> Brute Force Key Encryption </label>
-          </div>
-          <!-- Compression -->
-          <div class="copy" id="copy">
-            <h2> Payload Compression</h2>
-            <p>
-              <b>Compress the payload to diminish file size.</b>
-            </p>
-            <select class="col-sm-12" name="compression">
-              <option value="None" selected>None</option>
-              {% for plug in plugins["payload_mods"]["compression"] -%}
-                <option value="{{ plug }}" >{{ importlib.import_module('plugins.payload_mods.compression.' + plug + '.plugin' ).name() }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <!-- Obfuscation-->
-          <div class="copy" id="copy">
-            <h2> Payload Obfuscation</h2>
-            <p>
-              <b>Obfuscate the payload to prevent static analysis.</b>
-            </p>
-            <select class="col-sm-12" name="obfuscation">
-              <option value="None" selected>None</option>
-              {% for plug in plugins["payload_mods"]["obfuscation"] -%}
-                <option value="{{ plug }}">{{ importlib.import_module('plugins.payload_mods.obfuscation.' + plug + '.plugin' ).name() }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <!-- Payload Injection -->
-          <div class="copy" id="copy">
-            <h2> Payload Injection</h2>
-            <p>
-              <b>Inject the payload to execute it.</b>
-            </p>
-            <select class="col-sm-12">
-              <option selected>Thread Hijacking (local)</option>
-              <option>Thread Hijacking (remote)</option>
-              <option>Thread Hijacking (apc)</option>
-              <option>Thread Hijacking (early bird apc)</option>
-              <option>Callback Injection</option>
-              <option>Local Mapping Injection (local)</option>
-              <option>Local Mapping Injection (remote)</option>
-              <option>Function Stomping (local)</option>
-              <option>Function Stomping (remote)</option>
-              <option>Fibers</option>
-              <option>Threadless Injection</option>
-              <option>Module Stomping</option>
-              <option>Module Overloading</option>
-              <option>Process Hollowing</option>
-              <option>Ghost Process Injection</option>
-              <option>Herpaderping Process Injection</option>
-              <option>Transacted Hollowing</option>
-              <option>Ghostly Hollowing</option>
-              <option>Herpaderply Hollowing</option>
-            </select>
-          </div>
-          <!-- Unhooking -->
-          <div class="copy" id="copy">
-            <h2> Unhooking</h2>
-            <p>
-              <b>Unhook function hooks to prevent dynamic analysis.</b>
-            </p>
-            <select class="col-sm-12">
-              <option value="text" selected>None</option>
-              <option value="data">Disk</option>
-              <option value="rdata">KnownDLLs</option>
-              <option value="rsrc">Suspended Process</option>
-              <option value="rsrc">Web Server</option>
-              <option value="rsrc">Block DLL Policy</option>
-              <option value="rsrc">Direct Syscalls</option>
-              <option value="rsrc">Indirect Syscalls</option>
-            </select>
-          </div>
-          <!-- Binary Metadata -->
-          <h2> Binary Information</h2>
-          <div class="container">
-            <div class="row">
-              <div class="col-sm-6">
-                <p>
-                  <b>Metadata to be embedded into the executable.</b>
-                </p>
-                <p> Binary Name: <br>
-                  <input type="text" name="binaryName" placeholder="google">
-                </p>
-                <p> Company Name: <br>
-                  <input type="text" name="companyName" placeholder="Google LLC.">
-                </p>
-                <p> File Description: <br>
-                  <input type="text" name="fileDescription" placeholder="Google Chrome">
-                </p>
-                <p> Internal Name: <br>
-                  <input type="text" name="internalName" placeholder="Chrome">
-                </p>
-                <p> Legal Copyright: <br>
-                  <input type="text" name="legalCopy" placeholder="Copyright 2023 Google LLC.">
-                </p>
-                <p> Original Filename: <br>
-                  <input type="text" name="originalFilename" placeholder="chrome.exe">
-                </p>
-                <p> Product Name: <br>
-                  <input type="text" name="productName" placeholder="chrome.exe">
-                </p>
-                <p> Product Version: <br>
-                  <input type="text" name="productVersion" placeholder="112.0.5615.86">
-                </p>
-              </div>
-              <div class="col-sm-6">
-                <p>
-                  <b>Icon to be embedded into the executable.</b>
-                </p>
-                <div class="border p-3 mb-4">
-                  <!-- Placeholder for the uploaded image -->
-                  <img src="#" alt="Uploaded Image" id="uploadedImage" class="img-fluid">
-                </div>
-                <div class="custom-file">
-                  <input type="file" id="uploadInput" name="icon" onchange="displayImage(this)">
-                </div>
+            {% else %}
+            <div class="col-12 col-md-6 col-lg-4">
+              <p class="brief">
+                <b>{{ subsection }}</b>
+              </p>
+              <div class="radio">
+                {% for plug in plugins["execution"][subsection] %}
+                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/execution/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                {% endfor %}
               </div>
             </div>
+            {% endif %}
+            {% endfor %}
           </div>
+        </div>
+      </div>
+
+      <!-- Pre Compilation -->
+      <div class="copy" id="copy">
+        <h2>Pre Compilation</h2>
+        <p>
+          <b>Pre compilation modifiers to improve evasion.</b>
+        </p>
+        <div class="container">
+          <div class="row">
+            {% for subsection in plugins["pre_comp"].keys() %}
+            <div class="col-12 col-md-6 col-lg-4">
+              <p class="brief">
+                <b>{{ subsection }}</b>
+              </p>
+              <div class="radio">
+                {% for plug in plugins["pre_comp"][subsection] %}
+                <label><input type="checkbox" name="pre_comp" title="{{ importlib.import_module('plugins.pre_comp.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/pre_comp/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Post Compilation -->
+      <div class="copy" id="copy">
+        <h2>Post Compilation</h2>
+        <p>
+          <b>Post compilation modifiers to improve evasion.</b>
+        </p>
+        <div class="container">
+          <div class="row">
+            {% for subsection in plugins["post_comp"].keys() %}
+            <div class="col-12 col-md-6 col-lg-4">
+              <p class="brief">
+                <b>{{ subsection }}</b>
+              </p>
+              <div class="radio">
+                {% for plug in plugins["post_comp"][subsection] %}
+                <label><input type="checkbox" name="post_comp" title="{{ importlib.import_module('plugins.post_comp.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/post_comp/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
     </form>
-    <!-- Grey Small Button aligned center -->
+
+    <!-- Submit Button -->
     <div>
       <br />
       <br />
@@ -343,16 +273,6 @@
     </div>
   </body>
   <script>
-    function displayImage(e) {
-      if (e.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          document.querySelector('#uploadedImage').setAttribute('src', e.target.result);
-        }
-        reader.readAsDataURL(e.files[0]);
-      }
-    }
-
     // Function to handle drag and drop events
     function handleDragOver(event) {
         event.preventDefault();
@@ -373,6 +293,5 @@
         }
         reader.readAsDataURL(file);
     }   
-
   </script>
 </html>

@@ -4,12 +4,18 @@ import os
 import shutil
 from threading import Thread
 from utils.ldr_generation import generateLdr
+import importlib
 
 # favicon.ico route
 @app.route('/favicon.ico')
 def favicon():
     # Return the favicon
     return send_file('./static/MultLdr.ico', mimetype='image/vnd.microsoft.icon')
+
+# Present GUI
+@app.route('/', methods=['GET'])
+def gui():
+    return render_template('index.html', importlib = importlib, plugins = app.config['plugins'])
 
 # Get enabled plugins
 @app.route('/api/v1/plugins', methods=['GET'])
