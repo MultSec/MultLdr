@@ -96,6 +96,24 @@
           padding: 0;
         }
       }
+
+      /* Modal */
+      .modal {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #ffffff;
+        width: 200px;
+        height: 200px;
+        border-radius: 10px;
+        padding: 20px;
+        color: var(--black);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      }
     </style>
   </head>
   <body>
@@ -107,6 +125,12 @@
     <p>
       <i>MultLdr is a modular payload loader generator, created by <a href="https://infosec.exchange/@Pengrey">@Pengrey</a>. </i>
     </p>
+
+    <!-- Loading Modal -->
+    <div class="modal" id="loadingModal">
+      <img src="static/loading.gif" style="width: 50px; height: 50px;" alt="Loading...">
+    </div>
+
     <form action="/" method="post" enctype="multipart/form-data">
       <!-- Payload Upload -->
       <div class="files" id="files">
@@ -410,6 +434,10 @@
       }
 
       function requestLoader(id) {
+        // Show loading modal
+        var loadingModal = document.getElementById('loadingModal');
+        loadingModal.style.display = 'flex';
+
         const statusUri = `/api/v1/payload/status/${id}`;
         const resultUri = `/api/v1/payload/result/${id}`;
 
@@ -424,6 +452,9 @@
         }
 
         function downloadResult(blob) {
+          // Hide loading modal when all tasks are done
+          loadingModal.style.display = 'none';
+
           const blobUrl = URL.createObjectURL(blob);
           console.log("Result file downloaded successfully:", blobUrl);
 
@@ -484,6 +515,8 @@
 
           // Get scan results
           requestLoader(id);
+        } else {
+          alert('Please select a file to upload.');
         }
       }
     </script>
