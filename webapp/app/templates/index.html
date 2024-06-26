@@ -163,7 +163,7 @@
               </p>
               <div class="radio">
                 {% for plug in plugins["keying"][subsection] %}
-                <label><input type="checkbox" name="keying" title="{{ importlib.import_module('plugins.keying.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/keying/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                <label><input type="checkbox" name="keying" title="{{ importlib.import_module('plugins.keying.' + subsection + '.' + plug + '.run' ).desc() }}" value="{{ '/keying/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
                 {% endfor %}
               </div>
             </div>
@@ -187,7 +187,7 @@
               </p>
               <div class="radio">
                 {% for plug in plugins["payload_mods"][subsection] %}
-                <label><input type="checkbox" name="payload_mods" title="{{ importlib.import_module('plugins.payload_mods.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/payload_mods/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                <label><input type="checkbox" name="payload_mods" title="{{ importlib.import_module('plugins.payload_mods.' + subsection + '.' + plug + '.run' ).desc() }}" value="{{ '/payload_mods/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
                 {% endfor %}
               </div>
             </div>
@@ -213,9 +213,9 @@
               <div class="radio">
                 {% for plug in plugins["execution"][subsection] %}
                 {% if loop.first %}
-                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/execution/' + subsection + '/' + plug }}" checked="checked"> {{ plug }} </label><br>
+                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).desc() }}" value="{{ '/execution/' + subsection + '/' + plug }}" checked="checked"> {{ plug }} </label><br>
                 {% else %}
-                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/execution/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).desc() }}" value="{{ '/execution/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
                 {% endif %}
                 {% endfor %}
               </div>
@@ -227,7 +227,7 @@
               </p>
               <div class="radio">
                 {% for plug in plugins["execution"][subsection] %}
-                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/execution/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                <label><input type="radio" name="execution" title="{{ importlib.import_module('plugins.execution.' + subsection + '.' + plug + '.run' ).desc() }}" value="{{ '/execution/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
                 {% endfor %}
               </div>
             </div>
@@ -252,7 +252,7 @@
               </p>
               <div class="radio">
                 {% for plug in plugins["pre_comp"][subsection] %}
-                <label><input type="checkbox" name="pre_comp" title="{{ importlib.import_module('plugins.pre_comp.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/pre_comp/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                <label><input type="checkbox" name="pre_comp" title="{{ importlib.import_module('plugins.pre_comp.' + subsection + '.' + plug + '.run' ).desc() }}" value="{{ '/pre_comp/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
                 {% endfor %}
               </div>
             </div>
@@ -276,7 +276,7 @@
               </p>
               <div class="radio">
                 {% for plug in plugins["post_comp"][subsection] %}
-                <label><input type="checkbox" name="post_comp" title="{{ importlib.import_module('plugins.post_comp.' + subsection + '.' + plug + '.run' ).name() }}" value="{{ '/post_comp/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
+                <label><input type="checkbox" name="post_comp" title="{{ importlib.import_module('plugins.post_comp.' + subsection + '.' + plug + '.run' ).desc() }}" value="{{ '/post_comp/' + subsection + '/' + plug }}"> {{ plug }} </label><br>
                 {% endfor %}
               </div>
             </div>

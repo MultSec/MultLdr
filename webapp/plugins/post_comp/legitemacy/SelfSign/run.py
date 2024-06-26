@@ -1,4 +1,4 @@
-def name():
+def desc():
     return "Self Signing Certificate"
 
 def run():

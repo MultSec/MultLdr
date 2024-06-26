@@ -1,4 +1,4 @@
-def name():
+def desc():
     return "AES Encryption"
 
 def run():

@@ -1,4 +1,4 @@
-def name():
+def desc():
     return "Check if target is Domain Joined"
 
 def run():

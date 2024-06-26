@@ -1,4 +1,4 @@
-def name():
+def desc():
     return "File Bloating"
 
 def run():

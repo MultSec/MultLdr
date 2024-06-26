@@ -24,35 +24,35 @@ def generateLdr(id, plugins):
     # Run Payload mods
     for plugin in plugins["payload_mods"]:
         plugPath = "plugins" + plugin.replace("/", ".") + ".run"
-        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         time.sleep(1) # emulate running plugin
         importlib.import_module(plugPath).run()
 
     # Run Keying
     for plugin in plugins["keying"]:
         plugPath = "plugins" + plugin.replace("/", ".") + ".run"
-        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         time.sleep(1) # emulate running plugin
         importlib.import_module(plugPath).run()
 
     # Run Execution
     for plugin in plugins["execution"]:
         plugPath = "plugins" + plugin.replace("/", ".") + ".run"
-        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         time.sleep(1) # emulate running plugin
         importlib.import_module(plugPath).run()
 
     # Run Pre Compilation
     for plugin in plugins["pre_comp"]:
         plugPath = "plugins" + plugin.replace("/", ".") + ".run"
-        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         time.sleep(1) # emulate running plugin
         importlib.import_module(plugPath).run()
 
     # Run Post Compilation
     for plugin in plugins["post_comp"]:
         plugPath = "plugins" + plugin.replace("/", ".") + ".run"
-        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).name()}")
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         time.sleep(1) # emulate running plugin
         importlib.import_module(plugPath).run()
 

@@ -1,4 +1,4 @@
-def name():
+def desc():
     return "IsDebuggerPresent API call"
 
 def run():

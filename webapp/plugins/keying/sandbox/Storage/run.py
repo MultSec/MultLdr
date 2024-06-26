@@ -1,4 +1,4 @@
-def name():
+def desc():
     return "Check storage size to detect sanboxes"
 
 def run():

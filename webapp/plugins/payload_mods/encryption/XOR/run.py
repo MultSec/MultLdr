@@ -1,4 +1,4 @@
-def name():
+def desc():
     return "XOR Encryption"
 
 def run():
