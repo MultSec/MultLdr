@@ -7,11 +7,14 @@ COPY /webapp /webapp
 # Set the working directory
 WORKDIR /webapp
 
+# Set environment variable for print buffering
+ENV PYTHONUNBUFFERED=1
+
 # Install the challenge requirements
 RUN pip3 install -r requirements.txt
 
-# Expose the port 8080
-EXPOSE 8080
+# Expose the port 5000
+EXPOSE 5000
 
-# Run the command to start uWSGI
-CMD ["uwsgi", "app.ini"]
+# Run the command to start the server
+CMD ["python3", "run.py"]
