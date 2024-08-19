@@ -21,15 +21,15 @@ def generateLdr(id, plugins):
     
     setStatus(id)
 
-    # Run Payload mods
-    for plugin in plugins["payload_mods"]:
+    # Run Keying
+    for plugin in plugins["keying"]:
         plugPath = "plugins" + plugin.replace("/", ".") + ".run"
         Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         time.sleep(1) # emulate running plugin
         importlib.import_module(plugPath).run()
-
-    # Run Keying
-    for plugin in plugins["keying"]:
+        
+    # Run Payload mods
+    for plugin in plugins["payload_mods"]:
         plugPath = "plugins" + plugin.replace("/", ".") + ".run"
         Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         time.sleep(1) # emulate running plugin
