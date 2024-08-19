@@ -1,6 +1,7 @@
 import os
 import shutil
 import importlib
+import subprocess
 
 class Logger:
     @staticmethod
@@ -45,7 +46,6 @@ def setStatus(id):
             file.write("Working")
 
 def setTemplate(id):
-
     os.makedirs(f'./uploads/{id}/src/')
 
     filename = f'./uploads/{id}/src/main.c'
@@ -75,6 +75,34 @@ int main() {
     with open(filename, 'w') as file:
         file.write(template)
 
+def setMakefile(id):
+    filename = f'./uploads/{id}/makefile'
+
+    content = '''\
+ProjectName		= result
+
+CCX64			= x86_64-w64-mingw32-gcc
+
+CFLAGS			=  -Os -fno-asynchronous-unwind-tables
+CFLAGS 			+= -fno-ident -fpack-struct=8 -falign-functions=1
+CFLAGS  		+= -s -ffunction-sections -falign-jumps=1 -w
+CFLAGS			+= -Wl,-s,--no-seh,--enable-stdcall-fixup
+{{CFLAGS}}
+
+CLIBS			= {{CLIBS}}
+
+SOURCES			=  src/*.c
+
+all: x64
+
+x64:
+	@ $(CCX64) $(SOURCES) $(CFLAGS) $(CLIBS) -o $(ProjectName).exe
+\
+'''
+
+    with open(filename, 'w') as file:
+        file.write(content)
+
 def cleanTemplate(id):
     filename = f'./uploads/{id}/src/main.c'
 
@@ -94,13 +122,29 @@ def cleanTemplate(id):
     with open(filename, 'w') as file:
         file.write(content)
 
+def cleanMakefile(id):
+    filename = f'./uploads/{id}/makefile'
+
+    # Open the file in read mode
+    with open(filename, 'r') as file:
+        content = file.read()
+    
+    # Clean Template
+    content = content.replace('\n{{CFLAGS}}\n', '')
+    content = content.replace(' {{CLIBS}}', '')
+
+    # Open the file in write mode and write the modified content
+    with open(filename, 'w') as file:
+        file.write(content)
+
 def generateLdr(id, plugins):
     Log.info(f"[\033[34m{id}\033[0m] Setting working status")
-    
     setStatus(id)
 
+    Log.info(f"[\033[34m{id}\033[0m] Setting makefile")
+    setMakefile(id)
+
     Log.info(f"[\033[34m{id}\033[0m] Setting template")
-    
     setTemplate(id)
 
     Log.info(f"[\033[34m{id}\033[0m] Running plugins")
@@ -135,15 +179,21 @@ def generateLdr(id, plugins):
         Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         importlib.import_module(plugPath).run()
 
+    Log.info(f"[\033[34m{id}\033[0m] Cleaning up makefile")
+    cleanMakefile(id)
+
     Log.info(f"[\033[34m{id}\033[0m] Cleaning up template")
     cleanTemplate(id)
 
     Log.info(f"[\033[34m{id}\033[0m] Compiling loader")
-    with open(f'./uploads/{id}/result', 'w') as file:
-        file.write("LOADER")
-
+    os.chdir(f'./uploads/{id}')
+    make_process = subprocess.Popen("make", stderr=subprocess.STDOUT)
+    if make_process.wait() != 0:
+        Log.error(f"[\033[34m{id}\033[0m] Error when compiling")
+    os.chdir(f'./../..')
+    Log.info(f"[\033[34m{id}\033[0m] Compiling completed")
+    
     Log.info(f"[\033[34m{id}\033[0m] Work done, updating status")
-
     setStatus(id) 
 
 if __name__ == "__main__":
@@ -173,4 +223,4 @@ if __name__ == "__main__":
 
     # Remove directory
     Log.info(f"[\033[34m{id}\033[0m] Removing temp dir")
-    #shutil.rmtree(f'./uploads/{id}')
+    shutil.rmtree(f'./uploads/{id}')
