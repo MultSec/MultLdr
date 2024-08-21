@@ -209,7 +209,7 @@ if __name__ == "__main__":
                     
                 ],
                 "payload_mods": [
-                    "/payload_mods/encryption/AES"
+                    "/payload_mods/obfuscation/IPV4Fuscation"
                 ],
                 "post_comp": [
                     
