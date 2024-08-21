@@ -209,7 +209,7 @@ if __name__ == "__main__":
                     
                 ],
                 "payload_mods": [
-                    "/payload_mods/obfuscation/IPV4Fuscation"
+                    "/payload_mods/obfuscation/MACFuscation"
                 ],
                 "post_comp": [
                     
