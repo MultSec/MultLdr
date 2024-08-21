@@ -203,7 +203,7 @@ if __name__ == "__main__":
 
     plugins = {
                 "execution": [
-                    "/execution/local/FPointer"
+                    "/execution/remote/ThreadHijack"
                 ],
                 "keying": [
                     

