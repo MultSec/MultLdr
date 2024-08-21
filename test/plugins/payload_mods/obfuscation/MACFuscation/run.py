@@ -127,7 +127,7 @@ def run():
     original_data_size = len(original_data)
 
     # Convert the original data to MAC addresses
-    obfuscated_data = shellcode_to_macs(original_data)
+    obfuscated_data = shellcode_to_macs(bytearray(original_data))
 
     # Create the string with the MAC addresses
     macs_str = create_macs_string(obfuscated_data)

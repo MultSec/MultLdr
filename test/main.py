@@ -209,7 +209,7 @@ if __name__ == "__main__":
                     
                 ],
                 "payload_mods": [
-                    "/payload_mods/obfuscation/MACFuscation"
+                    "/payload_mods/obfuscation/UUIDFuscation"
                 ],
                 "post_comp": [
                     
