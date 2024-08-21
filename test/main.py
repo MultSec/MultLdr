@@ -209,7 +209,7 @@ if __name__ == "__main__":
                     
                 ],
                 "payload_mods": [
-                    "/payload_mods/encryption/RC4"
+                    "/payload_mods/encryption/BFDecryption"
                 ],
                 "post_comp": [
                     
