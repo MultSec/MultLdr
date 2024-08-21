@@ -203,13 +203,13 @@ if __name__ == "__main__":
 
     plugins = {
                 "execution": [
-                    "/execution/remote/ThreadHijack"
+                    "/execution/local/FPInline"
                 ],
                 "keying": [
                     
                 ],
                 "payload_mods": [
-                    "/payload_mods/encryption/CTAES"
+                    "/payload_mods/encryption/XOR"
                 ],
                 "post_comp": [
                     
