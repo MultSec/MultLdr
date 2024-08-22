@@ -211,9 +211,7 @@ if __name__ == "__main__":
                     "/execution/local/FPInline"
                 ],
                 "keying": [
-                    "/keying/debug/IsDebuggerPresent1",
-                    "/keying/privileges/NotAdmin",
-                    "/keying/privileges/DomainJoined",
+                    "/keying/sandbox/Vendors"
                 ],
                 "payload_mods": [
                     "/payload_mods/encryption/XOR"
