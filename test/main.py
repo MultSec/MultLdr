@@ -211,10 +211,12 @@ if __name__ == "__main__":
                     "/execution/local/FPInline"
                 ],
                 "keying": [
-                    "/keying/debug/IsDebuggerPresent3"
+                    "/keying/debug/IsDebuggerPresent1",
+                    "/keying/privileges/NotAdmin",
+                    "/keying/privileges/DomainJoined",
                 ],
                 "payload_mods": [
-                    "/payload_mods/encryption/CTAES"
+                    "/payload_mods/encryption/XOR"
                 ],
                 "post_comp": [
                     
