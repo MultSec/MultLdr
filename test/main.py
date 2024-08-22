@@ -178,12 +178,6 @@ def generateLdr(id, plugins):
         Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
         importlib.import_module(plugPath).run()
 
-    # Run Post Compilation
-    for plugin in plugins["post_comp"]:
-        plugPath = "plugins" + plugin.replace("/", ".") + ".run"
-        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
-        importlib.import_module(plugPath).run()
-
     Log.info(f"[\033[34m{id}\033[0m] Cleaning up makefile")
     cleanMakefile()
 
@@ -195,7 +189,13 @@ def generateLdr(id, plugins):
     if make_process.wait() != 0:
         Log.error(f"[\033[34m{id}\033[0m] Error when compiling")
     Log.info(f"[\033[34m{id}\033[0m] Compiling completed")
-    
+
+    # Run Post Compilation
+    for plugin in plugins["post_comp"]:
+        plugPath = "plugins" + plugin.replace("/", ".") + ".run"
+        Log.info(f"[\033[34m{id}\033[0m] Running plugin: {importlib.import_module(plugPath).desc()}")
+        importlib.import_module(plugPath).run()
+
     Log.info(f"[\033[34m{id}\033[0m] Work done, updating status")
     setStatus() 
 
@@ -217,15 +217,19 @@ if __name__ == "__main__":
                     "/payload_mods/encryption/XOR"
                 ],
                 "post_comp": [
-                    
+                    "/post_comp/legitemacy/FileBloating",
+                    "/post_comp/legitemacy/SelfSign"
                 ],
                 "pre_comp": [
-                    
+                    "/pre_comp/entropy/WordStuffing"
                 ]
             }
 
     generateLdr(id, plugins)
 
+    # Copy result to current directory
+    shutil.move(f'./uploads/{id}/result.exe', "./result.exe")
+    
     # Remove directory
     Log.info(f"[\033[34m{id}\033[0m] Removing temp dir")
-    #shutil.rmtree(f'./uploads/{id}')
+    shutil.rmtree(f'./uploads/{id}')
