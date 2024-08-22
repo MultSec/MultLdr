@@ -91,7 +91,7 @@ VOID DeobfuscateShellcode(unsigned char *ObsShellcode[], PBYTE DeobsShellcode) {
 }
 '''
 
-    payload_mods = ''' \
+    payload_mods = '''\
     SIZE_T      	sPayloadSize	= SHELLCODE_SIZE;
 
     // Allocating buffer to hold decrypted shellcode

