@@ -40,7 +40,7 @@ def upload(id):
     os.makedirs(f'./uploads/{id}')
     
     # Save the file to the uploads folder as payload
-    file.save(f'./uploads/{id}/payload')
+    file.save(f'./uploads/{id}/payload.bin')
 
     # Return the success message
     return jsonify({"message": "File uploaded successfully"})
@@ -99,7 +99,7 @@ def getStatus(id):
 # Generate loader with payload for a given id
 @app.route('/api/v1/payload/result/<id>', methods=['GET'])
 def getResult(id):
-    file_path = os.path.abspath(f'./uploads/{id}/result')
+    file_path = os.path.abspath(f'./uploads/{id}/result.exe')
 
     # Check if the file exists
     if os.path.exists(file_path):
